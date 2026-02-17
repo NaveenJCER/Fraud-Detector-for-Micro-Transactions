@@ -22,15 +22,20 @@ model = IsolationForest(
 # Fit the model
 model.fit(X)
 
-# Predict anomalies (-1 = anomaly, 1 = normal)
-df['anomaly_flag'] = model.predict(X)
+# Predict anomalies
+# Optimization: Calculate fraud score first. predict() calls decision_function internally
+# and thresholds it. By manually thresholding, we avoid re-computing the decision tree paths.
 df['fraud_score'] = model.decision_function(X)
-
-# Convert -1 to 'Fraud', 1 to 'Legit'
-df['anomaly_flag'] = df['anomaly_flag'].map({1: 'Legit', -1: 'Fraud'})
+df['anomaly_flag'] = np.where(df['fraud_score'] < 0, 'Fraud', 'Legit')
 
 # Save the model
 joblib.dump(model, "model/fraud_model.pkl")
+
+# Reorder columns to match original output (anomaly_flag before fraud_score)
+# This ensures downstream consumers (and tests) see the exact same CSV structure.
+cols = [c for c in df.columns if c not in ['anomaly_flag', 'fraud_score']]
+cols += ['anomaly_flag', 'fraud_score']
+df = df[cols]
 
 # Save results with predictions
 df.to_csv("data/scored_transactions.csv", index=False)
