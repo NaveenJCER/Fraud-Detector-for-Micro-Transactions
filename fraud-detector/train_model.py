@@ -22,9 +22,13 @@ model = IsolationForest(
 # Fit the model
 model.fit(X)
 
-# Predict anomalies (-1 = anomaly, 1 = normal)
-df['anomaly_flag'] = model.predict(X)
-df['fraud_score'] = model.decision_function(X)
+# Calculate fraud score first (decision_function)
+# PERFORMANCE OPTIMIZATION: IsolationForest.predict(X) internally calls decision_function(X).
+# By calculating score first and deriving prediction, we avoid re-traversing the trees,
+# resulting in ~50% faster inference.
+scores = model.decision_function(X)
+df['anomaly_flag'] = np.where(scores < 0, -1, 1)
+df['fraud_score'] = scores
 
 # Convert -1 to 'Fraud', 1 to 'Legit'
 df['anomaly_flag'] = df['anomaly_flag'].map({1: 'Legit', -1: 'Fraud'})
