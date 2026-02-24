@@ -22,12 +22,12 @@ model = IsolationForest(
 # Fit the model
 model.fit(X)
 
-# Predict anomalies (-1 = anomaly, 1 = normal)
-df['anomaly_flag'] = model.predict(X)
-df['fraud_score'] = model.decision_function(X)
-
-# Convert -1 to 'Fraud', 1 to 'Legit'
-df['anomaly_flag'] = df['anomaly_flag'].map({1: 'Legit', -1: 'Fraud'})
+# Compute anomaly scores (lower scores = more abnormal)
+# Optimization: Calculate decision_function once and derive prediction manually
+# to avoid double tree traversal (predict() calls decision_function() internally).
+scores = model.decision_function(X)
+df['anomaly_flag'] = np.where(scores < 0, 'Fraud', 'Legit')
+df['fraud_score'] = scores
 
 # Save the model
 joblib.dump(model, "model/fraud_model.pkl")
