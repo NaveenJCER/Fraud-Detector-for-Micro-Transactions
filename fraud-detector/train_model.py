@@ -3,39 +3,51 @@ import numpy as np
 from sklearn.ensemble import IsolationForest
 import joblib
 
-# Load the dataset
-df = pd.read_csv("data/transactions.csv")
 
-# Select numeric features for model
-X = df[['amount']].copy()
+def main():
+    # Load the dataset
+    df = pd.read_csv("data/transactions.csv")
 
-# Optional normalization (scaling)
-X['amount'] = np.log1p(X['amount'])  # log scale for better results
+    # Select numeric features for model
+    X = df[["amount"]].copy()
 
-# Build Isolation Forest model
-model = IsolationForest(
-    n_estimators=100,
-    contamination=0.02,  # approx 2% anomalies expected
-    random_state=42
-)
+    # Optional normalization (scaling)
+    X["amount"] = np.log1p(X["amount"])  # log scale for better results
 
-# Fit the model
-model.fit(X)
+    # Build Isolation Forest model
+    model = IsolationForest(
+        n_estimators=100,
+        contamination=0.02,  # approx 2% anomalies expected
+        random_state=42,
+    )
 
-# Predict anomalies (-1 = anomaly, 1 = normal)
-df['anomaly_flag'] = model.predict(X)
-df['fraud_score'] = model.decision_function(X)
+    # Fit the model
+    model.fit(X)
 
-# Convert -1 to 'Fraud', 1 to 'Legit'
-df['anomaly_flag'] = df['anomaly_flag'].map({1: 'Legit', -1: 'Fraud'})
+    # Performance Optimization: Calculate decision_function once and derive predictions.
+    # Calling predict(X) internally calls decision_function(X), so calling both doubles the
+    # computational cost. By deriving predictions manually (score < 0 is anomaly), we avoid
+    # a second tree traversal, speeding up inference by ~50%.
+    df["fraud_score"] = model.decision_function(X)
 
-# Save the model
-joblib.dump(model, "model/fraud_model.pkl")
+    # Derive anomaly_flag directly from fraud_score
+    # score < 0 => anomaly (-1), score >= 0 => normal (1)
+    df["anomaly_flag"] = np.where(df["fraud_score"] < 0, -1, 1)
 
-# Save results with predictions
-df.to_csv("data/scored_transactions.csv", index=False)
+    # Convert -1 to 'Fraud', 1 to 'Legit'
+    df["anomaly_flag"] = df["anomaly_flag"].map({1: "Legit", -1: "Fraud"})
 
-print("✅ Model training complete!")
-print("💾 Saved model to model/fraud_model.pkl")
-print("📊 Scored data saved to data/scored_transactions.csv")
-print(df.head(10))
+    # Save the model
+    joblib.dump(model, "model/fraud_model.pkl")
+
+    # Save results with predictions
+    df.to_csv("data/scored_transactions.csv", index=False)
+
+    print("✅ Model training complete!")
+    print("💾 Saved model to model/fraud_model.pkl")
+    print("📊 Scored data saved to data/scored_transactions.csv")
+    print(df.head(10))
+
+
+if __name__ == "__main__":
+    main()
