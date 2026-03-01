@@ -1,0 +1,3 @@
+## 2024-05-24 - [IsolationForest & Pandas Redundant Filtering]
+**Learning:** `IsolationForest.predict(X)` is extremely redundant when `decision_function(X)` is also needed, as both calculate the same internal scores. `predict()` just thresholds it internally at 0. Furthermore, repeating `df[df['col'] == 'val']` for both metric calculation and UI rendering wastes memory and CPU.
+**Action:** Instead of calling `predict(X)`, use `np.where(decision_function(X) < 0, -1, 1)` to manually threshold the calculated scores, doubling inference speed. In pandas/Streamlit, assign `df[df['col'] == 'val']` to a variable and reuse it throughout the render loop.
