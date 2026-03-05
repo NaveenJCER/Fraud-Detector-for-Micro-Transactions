@@ -1,0 +1,3 @@
+## 2024-05-24 - Optimization Pattern for IsolationForest
+**Learning:** Calculating `decision_function(X)` once and manually deriving anomaly predictions (where a score < 0 indicates an anomaly and >= 0 is normal) avoids the redundant internal call that `predict(X)` makes, effectively halving the inference time for Scikit-Learn's IsolationForest model.
+**Action:** Next time an IsolationForest model is used for predictions alongside its decision function scores, ensure the scores are calculated first and used to derive the predictions rather than calling both methods separately.
