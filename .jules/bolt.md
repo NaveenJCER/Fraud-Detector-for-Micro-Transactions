@@ -1,0 +1,3 @@
+## 2026-03-06 - Optimize scikit-learn IsolationForest Inference
+**Learning:** scikit-learn's `IsolationForest.predict(X)` internally calls `decision_function(X)`. Calling both sequentially duplicates the work. The anomaly flag can be manually derived from the score directly (`score < 0` indicates anomaly).
+**Action:** When both predictions and anomaly scores are needed from IsolationForest, calculate `decision_function(X)` once and derive predictions manually (using numpy `where(score < 0, 'Fraud', 'Legit')`) to avoid redundant internal calls and halve inference time.
