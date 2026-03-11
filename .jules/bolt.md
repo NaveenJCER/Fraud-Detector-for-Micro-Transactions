@@ -1,0 +1,3 @@
+## 2024-05-14 - IsolationForest Performance and Streamlit Redundancy
+**Learning:** Calculating `decision_function(X)` and deriving predictions from it manually (`score < 0`) avoids redundant scoring that IsolationForest's `predict(X)` method performs. In Streamlit apps, recalculating filtered DataFrames repeatedly (e.g. `df[df['flag'] == 'Fraud']`) adds unnecessary computational overhead for every refresh.
+**Action:** Always derive binary anomaly predictions directly from the decision function scores to halve inference time. Cache and reuse filtered Pandas DataFrames locally within the script to avoid re-evaluating masks when calculating metrics and preparing data for visualization.
