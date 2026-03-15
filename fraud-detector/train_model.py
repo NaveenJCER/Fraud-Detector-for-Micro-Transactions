@@ -7,27 +7,26 @@ import joblib
 df = pd.read_csv("data/transactions.csv")
 
 # Select numeric features for model
-X = df[['amount']].copy()
+X = df[["amount"]].copy()
 
 # Optional normalization (scaling)
-X['amount'] = np.log1p(X['amount'])  # log scale for better results
+X["amount"] = np.log1p(X["amount"])  # log scale for better results
 
 # Build Isolation Forest model
 model = IsolationForest(
     n_estimators=100,
     contamination=0.02,  # approx 2% anomalies expected
-    random_state=42
+    random_state=42,
 )
 
 # Fit the model
 model.fit(X)
 
 # Predict anomalies (-1 = anomaly, 1 = normal)
-df['anomaly_flag'] = model.predict(X)
-df['fraud_score'] = model.decision_function(X)
-
-# Convert -1 to 'Fraud', 1 to 'Legit'
-df['anomaly_flag'] = df['anomaly_flag'].map({1: 'Legit', -1: 'Fraud'})
+# Derive labels from decision_function to avoid duplicate inference work
+scores = model.decision_function(X)
+df["anomaly_flag"] = np.where(scores < 0, "Fraud", "Legit")
+df["fraud_score"] = scores
 
 # Save the model
 joblib.dump(model, "model/fraud_model.pkl")
