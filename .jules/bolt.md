@@ -1,0 +1,3 @@
+## 2024-03-23 - Optimize IsolationForest prediction
+**Learning:** scikit-learn's `IsolationForest.predict(X)` internally calls `decision_function(X)` to calculate scores and then determines labels based on whether the score is less than 0. If both `predict(X)` and `decision_function(X)` are called (e.g. to get both anomaly flags and raw scores), `decision_function(X)` is effectively evaluated twice, which is a redundant operation that halves inference performance.
+**Action:** Calculate `decision_function(X)` once and derive predictions manually using `np.where(score < 0, -1, 1)` (or mapping directly to labels) to avoid the redundant internal call, significantly reducing inference time.
