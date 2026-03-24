@@ -1,0 +1,3 @@
+## 2024-05-14 - Scikit-Learn IsolationForest prediction redundancy bottleneck
+**Learning:** Using `model.predict(X)` immediately followed by `model.decision_function(X)` on a `scikit-learn` `IsolationForest` causes the data to traverse the ensemble of trees twice. Since `predict` internally computes the anomaly score to determine the (-1, 1) labels, this redundancy doubles the inference time for a large dataset.
+**Action:** When both labels and scores are needed, only call `model.decision_function(X)` and derive labels manually using `np.where(scores < 0, 'Fraud', 'Legit')` to cut inference time by ~50%. Ensure column ordering remains consistent if applying to a dataframe.
