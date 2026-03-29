@@ -1,0 +1,3 @@
+## 2024-03-29 - IsolationForest Redundant Compute Optimization
+ **Learning:** `IsolationForest.predict(X)` internally calls `decision_function(X)`. If an application requires both the anomaly flag and the raw fraud score, calling both methods results in a 100% redundant computation of the isolation path lengths.
+ **Action:** Always compute `decision_function(X)` once and derive the boolean/flag predictions manually using `np.where(scores < 0, -1, 1)` to halve the inference time.
