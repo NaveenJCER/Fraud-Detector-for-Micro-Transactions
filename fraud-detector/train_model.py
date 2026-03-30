@@ -22,9 +22,11 @@ model = IsolationForest(
 # Fit the model
 model.fit(X)
 
+# ⚡ Bolt Optimization: Calculate decision function once to avoid redundant tree traversal
+fraud_score = model.decision_function(X)
 # Predict anomalies (-1 = anomaly, 1 = normal)
-df['anomaly_flag'] = model.predict(X)
-df['fraud_score'] = model.decision_function(X)
+df['anomaly_flag'] = np.where(fraud_score < 0, -1, 1)
+df['fraud_score'] = fraud_score
 
 # Convert -1 to 'Fraud', 1 to 'Legit'
 df['anomaly_flag'] = df['anomaly_flag'].map({1: 'Legit', -1: 'Fraud'})
