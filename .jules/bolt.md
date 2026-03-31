@@ -1,0 +1,3 @@
+## 2024-05-24 - Redundant DataFrame Filtering in Streamlit
+**Learning:** In Streamlit applications, every interaction reruns the entire script top-to-bottom. Performing redundant O(N) filtering operations (like `df[df['anomaly_flag'] == 'Fraud']`) multiple times in the same script multiplies memory allocations and CPU cycles needlessly. This is especially impactful on large datasets.
+**Action:** Always store the result of a filtered DataFrame in a variable (e.g., `frauds = df[...]`) and reuse that variable for both metric calculations (e.g., `len(frauds)`) and visualizations/dataframes.
