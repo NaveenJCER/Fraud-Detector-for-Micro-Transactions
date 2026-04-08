@@ -1,13 +1,15 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import joblib
 
 # Page setup
 st.set_page_config(page_title="Fraud Detector Dashboard", layout="wide")
 
 st.title("💳 Fraud Detector for Micro-Transactions")
-st.markdown("This dashboard displays flagged suspicious transactions detected by the Isolation Forest model.")
+st.markdown(
+    "This dashboard displays flagged suspicious transactions detected by the Isolation Forest model."
+)
+
 
 # Load data
 @st.cache_data
@@ -15,11 +17,15 @@ def load_data():
     df = pd.read_csv("data/scored_transactions.csv")
     return df
 
+
 df = load_data()
 
 # Summary metrics
 total_txns = len(df)
-fraud_txns = len(df[df['anomaly_flag'] == 'Fraud'])
+# ⚡ Bolt optimization: Filter 'Fraud' transactions once and store in 'frauds'.
+# This avoids redundant filtering (O(n)) when calculating metrics and displaying the dataframe.
+frauds = df[df["anomaly_flag"] == "Fraud"]
+fraud_txns = len(frauds)
 legit_txns = total_txns - fraud_txns
 
 # Display summary
@@ -32,7 +38,6 @@ st.markdown("---")
 
 # Show fraud transactions
 st.subheader("⚠️ Flagged Fraudulent Transactions")
-frauds = df[df['anomaly_flag'] == 'Fraud']
 
 if frauds.empty:
     st.info("No suspicious transactions detected ✅")
@@ -43,15 +48,25 @@ else:
 st.markdown("---")
 st.subheader("📊 Transaction Amount Distribution")
 
-fig = px.histogram(df, x="amount", color="anomaly_flag",
-                   title="Distribution of Transaction Amounts",
-                   nbins=30, barmode='overlay')
+fig = px.histogram(
+    df,
+    x="amount",
+    color="anomaly_flag",
+    title="Distribution of Transaction Amounts",
+    nbins=30,
+    barmode="overlay",
+)
 st.plotly_chart(fig, use_container_width=True)
 
 # Optional: Fraud score visualization
 st.subheader("🔍 Fraud Score Analysis")
-fig2 = px.scatter(df, x="transaction_id", y="fraud_score", color="anomaly_flag",
-                  title="Fraud Score by Transaction")
+fig2 = px.scatter(
+    df,
+    x="transaction_id",
+    y="fraud_score",
+    color="anomaly_flag",
+    title="Fraud Score by Transaction",
+)
 st.plotly_chart(fig2, use_container_width=True)
 
 st.markdown("---")
