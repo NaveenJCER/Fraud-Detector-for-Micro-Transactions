@@ -1,3 +1,7 @@
-## 2024-04-01 - IsolationForest redundant predict() calls
-**Learning:** `IsolationForest.predict(X)` internally calls `decision_function(X)` to calculate scores and map them to -1/1. If you also need `fraud_score = model.decision_function(X)`, calling both methods duplicates the expensive calculation, doubling inference time.
-**Action:** Always compute `decision_function(X)` first, and derive predictions manually using `np.where(scores < 0, -1, 1)` to effectively halve inference time without changing behavior.
+## 2024-05-24 - Avoid `__pycache__` commits
+**Learning:** Compiled Python bytecode files (`.pyc` files in `__pycache__`) should never be committed as they add redundant binary bloat, cause merge conflicts across different platforms, and violate standard version control best practices.
+**Action:** Always clean the working tree of temporary and binary files (e.g., run `git status` to ensure `__pycache__` is excluded, or ensure `.gitignore` lists it) before committing, and use `git rm --cached` if they are accidentally added.
+
+## 2024-05-24 - Explicit Comments for Optimization Directives
+**Learning:** System constraints requiring explanatory comments (e.g., "Always add comments explaining the optimization") are strictly enforced in code reviews. Skipping them leads to PR rejection.
+**Action:** Always add inline comments explicitly marking the optimization and explaining its intent (e.g., using `⚡ Bolt optimization:` prefix) before submitting code for review.
