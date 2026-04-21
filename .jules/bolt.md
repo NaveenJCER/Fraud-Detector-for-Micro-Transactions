@@ -1,3 +1,3 @@
-## 2024-04-01 - IsolationForest redundant predict() calls
-**Learning:** `IsolationForest.predict(X)` internally calls `decision_function(X)` to calculate scores and map them to -1/1. If you also need `fraud_score = model.decision_function(X)`, calling both methods duplicates the expensive calculation, doubling inference time.
-**Action:** Always compute `decision_function(X)` first, and derive predictions manually using `np.where(scores < 0, -1, 1)` to effectively halve inference time without changing behavior.
+## 2025-04-21 - Caching DataFrame filters for UI metrics
+**Learning:** In Streamlit applications, repeatedly filtering DataFrames for UI display and metrics calculations introduces redundant CPU cycles and memory overhead that scale with data size.
+**Action:** Always store filtered DataFrames in variables and reuse them across multiple UI components (e.g., metrics and dataframes) to avoid redundant computation.
