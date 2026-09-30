@@ -17,9 +17,13 @@ def load_data():
 
 df = load_data()
 
+# Cache filtered subset to avoid redundant dataframe operations
+# ⚡ Bolt optimization: calculate the filtered frauds dataframe once and reuse it
+frauds = df[df["anomaly_flag"] == "Fraud"]
+
 # Summary metrics
 total_txns = len(df)
-fraud_txns = len(df[df['anomaly_flag'] == 'Fraud'])
+fraud_txns = len(frauds)
 legit_txns = total_txns - fraud_txns
 
 # Display summary
@@ -32,7 +36,6 @@ st.markdown("---")
 
 # Show fraud transactions
 st.subheader("⚠️ Flagged Fraudulent Transactions")
-frauds = df[df['anomaly_flag'] == 'Fraud']
 
 if frauds.empty:
     st.info("No suspicious transactions detected ✅")
