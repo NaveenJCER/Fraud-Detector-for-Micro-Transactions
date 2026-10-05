@@ -15,11 +15,16 @@ def load_data():
     df = pd.read_csv("data/scored_transactions.csv")
     return df
 
+
 df = load_data()
 
-# Summary metrics
+# Show fraud transactions & summary metrics
+# ⚡ Bolt optimization: cache the filtered DataFrame to avoid redundant evaluation
+# of the same condition across the app, saving compute time on every dashboard load.
+frauds = df[df["anomaly_flag"] == "Fraud"]
+
 total_txns = len(df)
-fraud_txns = len(df[df['anomaly_flag'] == 'Fraud'])
+fraud_txns = len(frauds)
 legit_txns = total_txns - fraud_txns
 
 # Display summary
@@ -30,9 +35,7 @@ col3.metric("Legit", legit_txns)
 
 st.markdown("---")
 
-# Show fraud transactions
 st.subheader("⚠️ Flagged Fraudulent Transactions")
-frauds = df[df['anomaly_flag'] == 'Fraud']
 
 if frauds.empty:
     st.info("No suspicious transactions detected ✅")
