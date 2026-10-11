@@ -9,17 +9,22 @@ st.set_page_config(page_title="Fraud Detector Dashboard", layout="wide")
 st.title("💳 Fraud Detector for Micro-Transactions")
 st.markdown("This dashboard displays flagged suspicious transactions detected by the Isolation Forest model.")
 
+
 # Load data
 @st.cache_data
 def load_data():
     df = pd.read_csv("data/scored_transactions.csv")
     return df
 
+
 df = load_data()
 
 # Summary metrics
 total_txns = len(df)
-fraud_txns = len(df[df['anomaly_flag'] == 'Fraud'])
+# ⚡ Bolt optimization: Cached the filtered dataframe to avoid duplicated boolean indexing.
+# Impact: Reduces pandas filtering operations by 50% for rendering frauds.
+frauds = df[df["anomaly_flag"] == "Fraud"]
+fraud_txns = len(frauds)
 legit_txns = total_txns - fraud_txns
 
 # Display summary
@@ -32,7 +37,6 @@ st.markdown("---")
 
 # Show fraud transactions
 st.subheader("⚠️ Flagged Fraudulent Transactions")
-frauds = df[df['anomaly_flag'] == 'Fraud']
 
 if frauds.empty:
     st.info("No suspicious transactions detected ✅")
